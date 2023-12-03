@@ -196,11 +196,11 @@ prop_blanks_allBlanks = length ( blanks allBlankSudoku ) == 9*9
 
 prop_bangBangEquals_correct :: [Int] -> Int -> Int -> Bool
 prop_bangBangEquals_correct xs i y
-    | i < 0 || i >= length xs = True -- i less than or equal to the len list return True
+    | i < 0 || i >= length xs = True
     | otherwise =
       updatedList !! i == y
     where
-      updatedList = xs !!= (i,y) -- update the list xs at index i with the value y, results new list that is identical with the original list but diff index
+      updatedList = xs !!= (i,y)
 
 -- * E3
 update :: Sudoku -> Pos -> Maybe Int -> Sudoku

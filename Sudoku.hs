@@ -121,7 +121,7 @@ cell = frequency [(9, return Nothing), (1, Just <$> choose (1,9))] -- <$> fmap l
 -- | an instance for generating Arbitrary Sudokus
 instance Arbitrary Sudoku where -- Type class arbitrary
   arbitrary = do
-    rowsList <- vectorOf 9 arbitrary
+    rowsList <- vectorOf 9 (vectorOf 9 (cell))
     return (Sudoku rowsList)
  -- hint: get to know the QuickCheck function vectorOf
 -- * C3

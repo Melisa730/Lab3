@@ -156,7 +156,7 @@ prop_blocks_lengths sudoku = all checkBlockLength (blocks sudoku)
     checkBlockLength block = length block == 9
 -- * D3
 isOkay :: Sudoku -> Bool
-isOkay sudoku = all isOkayBlock (rows sudoku) && all isOkayBlock (transpose (rows sudoku))
+isOkay sudoku = all isOkayBlock (rows sudoku) && all isOkayBlock (transpose (rows sudoku))-- använda funktionen blocks i denna funktion
 ---- Part A ends here --------------------------------------------------------
 ------------------------------------------------------------------------------
 ---- Part B starts here ------------------------------------------------------
@@ -223,25 +223,26 @@ prop_update_updated (Sudoku rows) (row, col) digit | (row < 0 || col < 0) || (ro
 -- * F1
 solve :: Sudoku -> Maybe Sudoku
 solve sudoku 
-  | not (isSudoku sudoku) || not (isOkay sudoku) = Nothing 
-  | otherwise = case solve' sudoku (blanks sudoku) of 
+  | not (isSudoku sudoku) || not (isOkay sudoku) = Nothing -- om det inte är ok så gör not uttrycket till true
+  | otherwise = case solve' sudoku (blanks sudoku) of -- blanks sudoku--> lista av tomma postitioner i sudoku grid
                   [] -> Nothing
                   (firstS:_) -> Just firstS
   where 
     solve' :: Sudoku -> [Pos] -> [Sudoku]
-    solve sudoku [] = [sudoku]
-    solve sudoku (xy:xys) = [s | value <- [1..9]
-                            let updatedSudoku = update sudoku xy (Just value)
-                            isOkay updatedSudoku  
-                            s <- solve' updatedSudoku xys]
+    solve' sudoku [] = [sudoku]
+    solve' sudoku (xy:xys) = [s | value <- [1..9], 
+                                let updatedSudoku = update sudoku xy (Just value),
+                                  isOkay updatedSudoku,
+                                  s <- solve' updatedSudoku xys]  
 
--- FRÅGA OM PARSEERROR TRRRRRÖÖÖÖTTT PÅ SKITEN!!
+-- 
+--xy:xys positioner
 
 --solve :: Sudoku -> Maybe Sudoku
 -- Kolla om det är en sudoku: !(isSudoku (Sudoku rows)) = error "not at sudoku"--dålig sudoku
 --solve sudoku = case solve' sudoku (blanks sudoku) of
 --                  [] -> Nothing
---                  (firstS:_) -> Just firstS
+--                  (firstS:_) -> Just firstS 
       
 --      where solve' :: Sudoku -> [Pos] -> [Sudoku]
 --            solve' sudoku []       = [sudoku]
@@ -260,21 +261,32 @@ solve sudoku
 readAndSolve :: FilePath -> IO()
 readAndSolve filePath = do
         sudoku <- readSudoku filePath
-        print $ solve sudoku
+        case solve sudoku of
+          Nothing -> print "no solution"
+          Just n -> printSudoku n
+          
+
+
 
 -- * F3
 isSolutionOf :: Sudoku -> Sudoku -> Bool
 isSolutionOf sudoku1 sudoku2 | (isOkay sudoku1) && (blanks sudoku1) == []    = digitPositions sudoku2 sudoku1
-                             | otherwise                                     = error "not a solution"
-                                     where digitPositions :: Sudoku -> Sudoku -> [Pos]
+                             | otherwise                                     = True
+                                     where digitPositions :: Sudoku -> Sudoku -> Bool
                                            digitPositions (Sudoku rows2) (Sudoku rows1) = all isSomething everyPos
-                                                                          where everyPos = [(row, col) | row <- [0..8], col <- [0..8]]
-                                                                                isSomething :: Pos -> Bool
-                                                                                isSomething (row, col) = case rows2 !! row !! col of
-                                                                                  Just n -> rows1 !! row !! col == Just n
-                                                                                  Nothing -> True
+                                            where everyPos = [(row, col) | row <- [0..8], col <- [0..8]]
+                                                  isSomething :: Pos -> Bool
+                                                  isSomething (row, col) = case rows2 !! row !! col of
+                                                    Just n -> rows1 !! row !! col == Just n
+                                                    Nothing -> True
+
+                                                    
 -- no blanks all blocks okay  (Är slltså en sulotion)
 -- för varje pos jämför om det är samma digit (Alltså)
 
 
 -- * F4
+--prop_SolveSound :: Sudoku -> Property
+
+-- GLÖM INTE F4!!!!!!
+

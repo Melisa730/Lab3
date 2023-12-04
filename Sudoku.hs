@@ -136,7 +136,7 @@ isOkayBlock block = not (hasDuplicates (filter isValidCell block))
   where
     isValidCell :: Maybe Int -> Bool
     isValidCell (Just n) = n >= 1 && n <= 9
-    isValidCell Nothing  = True
+    isValidCell Nothing  = False
 
 hasDuplicates :: Eq a => [a] -> Bool -- kollar duplicates
 hasDuplicates []     = False
@@ -222,19 +222,35 @@ prop_update_updated (Sudoku rows) (row, col) digit | (row < 0 || col < 0) || (ro
 ------------------------------------------------------------------------------
 -- * F1
 solve :: Sudoku -> Maybe Sudoku
--- Kolla om det är en sudoku: !(isSudoku (Sudoku rows)) = error "not at sudoku"--dålig sudoku
-solve sudoku = case solve' sudoku (blanks sudoku) of
+solve sudoku 
+  | not (isSudoku sudoku) || not (isOkay sudoku) = Nothing 
+  | otherwise = case solve' sudoku (blanks sudoku) of 
                   [] -> Nothing
                   (firstS:_) -> Just firstS
-      
-      where solve' :: Sudoku -> [Pos] -> [Sudoku]
-            solve' sudoku []       = [sudoku]
-            solve' sudoku (xy:xys) =  catMaybes $ do
-                                      value <- [1..9]
-                                      let updatedSudoku = update sudoku pos (Just value)
-                                      guard (isOkay updatedSudoku)
-                                      solve' updatedSudoku xys
+  where 
+    solve' :: Sudoku -> [Pos] -> [Sudoku]
+    solve sudoku [] = [sudoku]
+    solve sudoku (xy:xys) = [s | value <- [1..9]
+                            let updatedSudoku = update sudoku xy (Just value)
+                            isOkay updatedSudoku  
+                            s <- solve' updatedSudoku xys]
 
+-- FRÅGA OM PARSEERROR TRRRRRÖÖÖÖTTT PÅ SKITEN!!
+
+--solve :: Sudoku -> Maybe Sudoku
+-- Kolla om det är en sudoku: !(isSudoku (Sudoku rows)) = error "not at sudoku"--dålig sudoku
+--solve sudoku = case solve' sudoku (blanks sudoku) of
+--                  [] -> Nothing
+--                  (firstS:_) -> Just firstS
+      
+--      where solve' :: Sudoku -> [Pos] -> [Sudoku]
+--            solve' sudoku []       = [sudoku]
+--            solve' sudoku (xy:xys) =  catMaybes $ do
+--                                      value <- [1..9]
+--                                      let updatedSudoku = update sudoku pos (Just value)
+--                                      guard (isOkay updatedSudoku)
+--                                      solve' updatedSudoku xys
+--
               -- sätt in nu digit med update
               -- Kolla om sudoku fortfarande är valid med isOkay
 
@@ -252,11 +268,11 @@ isSolutionOf sudoku1 sudoku2 | (isOkay sudoku1) && (blanks sudoku1) == []    = d
                              | otherwise                                     = error "not a solution"
                                      where digitPositions :: Sudoku -> Sudoku -> [Pos]
                                            digitPositions (Sudoku rows2) (Sudoku rows1) = all isSomething everyPos
-                                                                          where everyPos [(row, col) | row <- [0..8], col <- [0..8]]
+                                                                          where everyPos = [(row, col) | row <- [0..8], col <- [0..8]]
                                                                                 isSomething :: Pos -> Bool
                                                                                 isSomething (row, col) = case rows2 !! row !! col of
-                                                                                Just n -> rows1 !! row !! col == Just n
-                                                                                Nothing -> True
+                                                                                  Just n -> rows1 !! row !! col == Just n
+                                                                                  Nothing -> True
 -- no blanks all blocks okay  (Är slltså en sulotion)
 -- för varje pos jämför om det är samma digit (Alltså)
 

@@ -235,27 +235,6 @@ solve sudoku
                                   isOkay updatedSudoku,
                                   s <- solve' updatedSudoku xys]  
 
--- 
---xy:xys positioner
-
---solve :: Sudoku -> Maybe Sudoku
--- Kolla om det är en sudoku: !(isSudoku (Sudoku rows)) = error "not at sudoku"--dålig sudoku
---solve sudoku = case solve' sudoku (blanks sudoku) of
---                  [] -> Nothing
---                  (firstS:_) -> Just firstS 
-      
---      where solve' :: Sudoku -> [Pos] -> [Sudoku]
---            solve' sudoku []       = [sudoku]
---            solve' sudoku (xy:xys) =  catMaybes $ do
---                                      value <- [1..9]
---                                      let updatedSudoku = update sudoku pos (Just value)
---                                      guard (isOkay updatedSudoku)
---                                      solve' updatedSudoku xys
---
-              -- sätt in nu digit med update
-              -- Kolla om sudoku fortfarande är valid med isOkay
-
-
 
 -- * F2
 readAndSolve :: FilePath -> IO()

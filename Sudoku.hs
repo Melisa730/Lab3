@@ -143,12 +143,19 @@ hasDuplicates []     = False
 hasDuplicates (x:xs) = elem x xs || hasDuplicates xs  -- || = or operator för bools
 -- * D2
 blocks :: Sudoku -> [Block]
-blocks (Sudoku rows) = [blockAt i j | i <- [0, 3, 6], j <- [0, 3, 6]]
+blocks (Sudoku rows) = blockList ++ rowBlockList ++ colBlockList
   where
+    blockList = [blockAt i j | i <- [0, 3, 6], j <- [0, 3, 6]]
+    rowBlockList = [rowBlockAt i | i <- [0..8]]
+    colBlockList = [colBlockAt j | j <- [0..8]]
     blockAt :: Int -> Int -> Block
-    blockAt rowStart colStart = [cellAt (rowStart + i)(colStart + j) | i <- [0..2], j <- [0..2]]
-    cellAt :: Int -> Int -> Cell
-    cellAt row col = (rows !! row) !! col
+    blockAt rowStart colStart = [cellAt (Sudoku rows) (rowStart + i)(colStart + j) | i <- [0..2], j <- [0..2]]
+    rowBlockAt :: Int -> Block
+    rowBlockAt rowStart = [cellAt (Sudoku rows) rowStart j | j <- [0..8]]
+    colBlockAt :: Int -> Block
+    colBlockAt colStart = [cellAt (Sudoku rows) i colStart | i <- [0..8]]
+cellAt :: Sudoku -> Int -> Int -> Cell
+cellAt (Sudoku rows) row col = (rows !! row) !! col
 prop_blocks_lengths :: Sudoku -> Bool
 prop_blocks_lengths sudoku = all checkBlockLength (blocks sudoku)
   where
@@ -204,16 +211,10 @@ prop_bangBangEquals_correct xs i y
 
 -- * E3
 update :: Sudoku -> Pos -> Maybe Int -> Sudoku
-update (Sudoku rows) (row, col) newDigit = Sudoku (updateRow rows row (updateCell (rows !! row) col newDigit))
-
-updateRow :: [Row] -> Int -> Row -> [Row]
-updateRow rows i newRow = take i rows ++ [newRow] ++ drop (i + 1) rows
-
-updateCell :: Row -> Int -> Maybe Int -> Row
-updateCell row col newDigit = take col row ++ [newDigit] ++ drop (col + 1) row
+update (Sudoku rows) (row, col) newDigit = Sudoku ((!!=) rows (row, ((!!=) (rows !! row) (col, newDigit))))
 
 prop_update_updated :: Sudoku -> Pos -> Maybe Int -> Bool
-prop_update_updated (Sudoku rows) (row, col) digit | (row < 0 || col < 0) || (row >= length rows || col >= length rows)   = error "out of bounds"
+prop_update_updated (Sudoku rows) (row, col) digit | (row < 0 || col < 0) || (row >= length rows || col >= length rows)   = True
                                                    | otherwise                                                            =
                                                                                                                              case update (Sudoku rows) (row, col) digit of
                                                                                                                               Sudoku updatedRows -> updatedRows !! row !! col == digit

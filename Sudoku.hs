@@ -137,10 +137,10 @@ isOkayBlock block = not (hasDuplicates (filter isValidCell block))
     isValidCell :: Maybe Int -> Bool
     isValidCell (Just n) = n >= 1 && n <= 9
     isValidCell Nothing  = False
-
 hasDuplicates :: Eq a => [a] -> Bool -- kollar duplicates
 hasDuplicates []     = False
 hasDuplicates (x:xs) = elem x xs || hasDuplicates xs  -- || = or operator för bools
+
 -- * D2
 blocks :: Sudoku -> [Block]
 blocks (Sudoku rows) = blockList ++ rowBlockList ++ colBlockList
@@ -148,29 +148,38 @@ blocks (Sudoku rows) = blockList ++ rowBlockList ++ colBlockList
     blockList = [blockAt i j | i <- [0, 3, 6], j <- [0, 3, 6]]
     rowBlockList = [rowBlockAt i | i <- [0..8]]
     colBlockList = [colBlockAt j | j <- [0..8]]
+
     blockAt :: Int -> Int -> Block
     blockAt rowStart colStart = [cellAt (Sudoku rows) (rowStart + i)(colStart + j) | i <- [0..2], j <- [0..2]]
+
     rowBlockAt :: Int -> Block
     rowBlockAt rowStart = [cellAt (Sudoku rows) rowStart j | j <- [0..8]]
+
     colBlockAt :: Int -> Block
     colBlockAt colStart = [cellAt (Sudoku rows) i colStart | i <- [0..8]]
+    
 cellAt :: Sudoku -> Int -> Int -> Cell
 cellAt (Sudoku rows) row col = (rows !! row) !! col
+
+
+{-Also add a property that states that, for each Sudoku,
+ there are 3*9 blocks, and each block has exactly 9 cells.-}
 prop_blocks_lengths :: Sudoku -> Bool
-prop_blocks_lengths sudoku = all checkBlockLength (blocks sudoku)
+prop_blocks_lengths sudoku = all checkBlockLength (blocks sudoku) && length (blocks sudoku) == 27
   where
     checkBlockLength :: Block -> Bool
     checkBlockLength block = length block == 9
+
 -- * D3
 isOkay :: Sudoku -> Bool
-isOkay sudoku = all isOkayBlock (rows sudoku) && all isOkayBlock (transpose (rows sudoku))-- använda funktionen blocks i denna funktion
+isOkay sudoku = all isOkayBlock (blocks sudoku) -- all använda funktionen blocks i denna funktion
+
 ---- Part A ends here --------------------------------------------------------
 ------------------------------------------------------------------------------
 ---- Part B starts here ------------------------------------------------------
 -- | Positions are pairs (row,column),
 -- (0,0) is top left corner, (8,8) is bottom left corner
 type Pos = (Int,Int)
-
 
 -- * E1
 blanks :: Sudoku -> [Pos]
@@ -266,7 +275,9 @@ isSolutionOf sudoku1 sudoku2 | (isOkay sudoku1) && (blanks sudoku1) == []    = d
 
 
 -- * F4
---prop_SolveSound :: Sudoku -> Property
+prop_SolveSound :: Sudoku -> Property
+prop_SolveSound sudoku = case solve sudoku of
+                          Just n -> isSolutionOf n sudoku ==> True 
+                          Nothing -> property True 
 
--- GLÖM INTE F4!!!!!!
 

@@ -260,7 +260,7 @@ readAndSolve filePath = do
 -- * F3
 isSolutionOf :: Sudoku -> Sudoku -> Bool
 isSolutionOf sudoku1 sudoku2 | (isOkay sudoku1) && (blanks sudoku1) == []    = digitPositions sudoku2 sudoku1
-                             | otherwise                                     = True
+                             | otherwise                                     = False
                                      where digitPositions :: Sudoku -> Sudoku -> Bool
                                            digitPositions (Sudoku rows2) (Sudoku rows1) = all isSomething everyPos
                                             where everyPos = [(row, col) | row <- [0..8], col <- [0..8]]
@@ -275,9 +275,13 @@ isSolutionOf sudoku1 sudoku2 | (isOkay sudoku1) && (blanks sudoku1) == []    = d
 
 
 -- * F4
+
+
 prop_SolveSound :: Sudoku -> Property
 prop_SolveSound sudoku = case solve sudoku of
-                          Just n -> isSolutionOf n sudoku ==> True 
+                          Just n -> property (isSolutionOf n sudoku)
                           Nothing -> property True 
+
+fewerChecks prop = quickCheckWith stdArgs{maxSuccess=30 } prop
 
 
